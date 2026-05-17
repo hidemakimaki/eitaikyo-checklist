@@ -7,15 +7,19 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Hiragino Sans', 'Meiryo', sans-serif; background: #f5f0eb; color: #2c2418; min-height: 100vh; }
-  
+
   .header { background: #4a3728; color: #f5e6c8; padding: 16px 20px; text-align: center; }
   .header h1 { font-size: 20px; font-weight: bold; letter-spacing: 0.1em; }
   .header p { font-size: 13px; margin-top: 4px; color: #d4b896; }
-  
+
   .progress-bar-wrap { background: #3a2a1c; padding: 10px 20px; }
   .progress-label { color: #d4b896; font-size: 12px; margin-bottom: 4px; display: flex; justify-content: space-between; }
   .progress-track { background: #2a1e14; border-radius: 10px; height: 8px; }
   .progress-fill { background: linear-gradient(90deg, #c8965a, #e8b878); height: 8px; border-radius: 10px; transition: width 0.4s ease; }
+
+  .sync-status { text-align: center; font-size: 11px; padding: 4px; background: #3a2a1c; color: #a08060; }
+  .sync-status.connected { color: #7ec87e; }
+  .sync-status.error { color: #e87878; }
 
   .tabs { display: flex; overflow-x: auto; background: #3a2a1c; padding: 0 12px; gap: 4px; }
   .tab { padding: 10px 14px; font-size: 12px; color: #a08060; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; transition: all 0.2s; }
@@ -58,6 +62,8 @@
   </div>
 </div>
 
+<div class="sync-status" id="sync-status">接続中...</div>
+
 <button class="reset-btn" onclick="resetAll()">チェックをリセット</button>
 
 <div class="tabs" id="tabs">
@@ -73,7 +79,24 @@
 
 <div id="sections"></div>
 
-<script>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, onValue, set, update } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCBVJxKw3PkI9QIgZoyt17WWXJ663EjaWM",
+  authDomain: "eitaikyo-checklist.firebaseapp.com",
+  databaseURL: "https://eitaikyo-checklist-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "eitaikyo-checklist",
+  storageBucket: "eitaikyo-checklist.firebasestorage.app",
+  messagingSenderId: "838112483096",
+  appId: "1:838112483096:web:ccf2588569ec57dd8af06d"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const checksRef = ref(db, 'checks');
+
 const DATA = [
   {
     id: 'gaijin', title: '1階 外陣',
@@ -133,7 +156,7 @@ const DATA = [
   },
 ];
 
-let state = {};
+let localState = {};
 
 function itemId(sectionId, catIdx, itemIdx) {
   return sectionId + '_' + catIdx + '_' + itemIdx;
@@ -151,9 +174,9 @@ function buildSections() {
       html += '<div class="category"><div class="category-title">' + cat.title + '</div>';
       cat.items.forEach(function(item, ii) {
         const id = itemId(section.id, ci, ii);
-        state[id] = { checked: false };
+        localState[id] = false;
         html += '<div class="item" id="item_' + id + '">'
-          + '<div class="checkbox" id="cb_' + id + '" onclick="toggleCheck(\'' + id + '\')"></div>'
+          + '<div class="checkbox" id="cb_' + id + '" onclick="window.toggleCheck(\'' + id + '\')"></div>'
           + '<div class="item-text" id="txt_' + id + '">' + item + '</div>'
           + '</div>';
       });
@@ -162,55 +185,64 @@ function buildSections() {
     div.innerHTML = html;
     container.appendChild(div);
   });
-  updateProgress();
 }
 
-function toggleCheck(id) {
-  state[id].checked = !state[id].checked;
+function applyState(id, checked) {
   const cb = document.getElementById('cb_' + id);
   const txt = document.getElementById('txt_' + id);
   const item = document.getElementById('item_' + id);
-  if (state[id].checked) {
-    cb.classList.add('done');
-    cb.textContent = '✓';
-    txt.classList.add('done');
-    item.classList.add('checked');
+  if (!cb) return;
+  if (checked) {
+    cb.classList.add('done'); cb.textContent = '✓';
+    txt.classList.add('done'); item.classList.add('checked');
   } else {
-    cb.classList.remove('done');
-    cb.textContent = '';
-    txt.classList.remove('done');
-    item.classList.remove('checked');
+    cb.classList.remove('done'); cb.textContent = '';
+    txt.classList.remove('done'); item.classList.remove('checked');
   }
-  updateProgress();
 }
 
 function updateProgress() {
-  const ids = Object.keys(state);
+  const ids = Object.keys(localState);
   const total = ids.length;
-  const done = ids.filter(function(id){ return state[id].checked; }).length;
+  const done = ids.filter(id => localState[id]).length;
   document.getElementById('progress-text').textContent = done + ' / ' + total + ' 完了';
-  document.getElementById('progress-fill').style.width = (total ? (done/total*100) : 0) + '%';
+  document.getElementById('progress-fill').style.width = (total ? (done / total * 100) : 0) + '%';
 }
 
-function showTab(idx) {
-  document.querySelectorAll('.tab').forEach(function(t,i){ t.classList.toggle('active', i===idx); });
-  document.querySelectorAll('.section').forEach(function(s,i){ s.classList.toggle('active', i===idx); });
-}
+window.toggleCheck = function(id) {
+  const newVal = !localState[id];
+  set(ref(db, 'checks/' + id), newVal);
+};
 
-function resetAll() {
-  Object.keys(state).forEach(function(id) {
-    state[id].checked = false;
-    const cb = document.getElementById('cb_' + id);
-    const txt = document.getElementById('txt_' + id);
-    const item = document.getElementById('item_' + id);
-    if (cb) { cb.classList.remove('done'); cb.textContent = ''; }
-    if (txt) { txt.classList.remove('done'); }
-    if (item) { item.classList.remove('checked'); }
-  });
-  updateProgress();
-}
+window.resetAll = function() {
+  if (!confirm('全てのチェックをリセットしますか？')) return;
+  const updates = {};
+  Object.keys(localState).forEach(id => { updates[id] = false; });
+  update(checksRef, updates);
+};
+
+window.showTab = function(idx) {
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+  document.querySelectorAll('.section').forEach((s, i) => s.classList.toggle('active', i === idx));
+};
 
 buildSections();
+
+onValue(checksRef, (snapshot) => {
+  const data = snapshot.val() || {};
+  Object.keys(localState).forEach(id => {
+    localState[id] = data[id] === true;
+    applyState(id, localState[id]);
+  });
+  updateProgress();
+  const statusEl = document.getElementById('sync-status');
+  statusEl.textContent = '同期中 — リアルタイム共有有効';
+  statusEl.className = 'sync-status connected';
+}, (error) => {
+  const statusEl = document.getElementById('sync-status');
+  statusEl.textContent = '接続エラー: ' + error.message;
+  statusEl.className = 'sync-status error';
+});
 </script>
 </body>
 </html>
