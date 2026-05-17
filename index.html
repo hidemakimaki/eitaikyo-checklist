@@ -67,19 +67,19 @@
 <button class="reset-btn" onclick="resetAll()">チェックをリセット</button>
 
 <div class="tabs" id="tabs">
-  <div class="tab active" onclick="showTab(0)">外陣（1F）</div>
-  <div class="tab" onclick="showTab(1)">内陣（1F）</div>
-  <div class="tab" onclick="showTab(2)">客僧間（1F）</div>
-  <div class="tab" onclick="showTab(3)">外回り</div>
-  <div class="tab" onclick="showTab(4)">法中</div>
-  <div class="tab" onclick="showTab(5)">その他</div>
-  <div class="tab" onclick="showTab(6)">講師控室（2F）</div>
-  <div class="tab" onclick="showTab(7)">当日準備</div>
-  <div class="tab" onclick="showTab(8)">残り一覧</div>
+  <div class="tab active" onclick="showTab(0)">残り一覧</div>
+  <div class="tab" onclick="showTab(1)">外陣（1F）</div>
+  <div class="tab" onclick="showTab(2)">内陣（1F）</div>
+  <div class="tab" onclick="showTab(3)">客僧間（1F）</div>
+  <div class="tab" onclick="showTab(4)">外回り</div>
+  <div class="tab" onclick="showTab(5)">法中</div>
+  <div class="tab" onclick="showTab(6)">その他</div>
+  <div class="tab" onclick="showTab(7)">講師控室（2F）</div>
+  <div class="tab" onclick="showTab(8)">当日準備</div>
 </div>
 
+<div class="section active" id="section_0"><div id="remaining-section"></div></div>
 <div id="sections"></div>
-<div class="section" id="section_8"><div id="remaining-section"></div></div>
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -168,8 +168,8 @@ function buildSections() {
   const container = document.getElementById('sections');
   DATA.forEach(function(section, si) {
     const div = document.createElement('div');
-    div.className = 'section' + (si === 0 ? ' active' : '');
-    div.id = 'section_' + si;
+    div.className = 'section';
+    div.id = 'section_' + (si + 1);
 
     let html = '';
     section.categories.forEach(function(cat, ci) {
@@ -226,7 +226,7 @@ window.resetAll = function() {
 window.showTab = function(idx) {
   document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === idx));
   document.querySelectorAll('.section').forEach((s, i) => s.classList.toggle('active', i === idx));
-  if (idx === 8) buildRemainingList();
+  if (idx === 0) buildRemainingList();
 };
 
 function buildRemainingList() {
@@ -261,6 +261,7 @@ function buildRemainingList() {
 }
 
 buildSections();
+buildRemainingList();
 
 onValue(checksRef, (snapshot) => {
   const data = snapshot.val() || {};
