@@ -6,43 +6,43 @@
 <title>報恩講・永代経　準備リスト</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Hiragino Sans', 'Meiryo', sans-serif; background: #f5f0eb; color: #2c2418; min-height: 100vh; }
+  body { font-family: 'Hiragino Sans', 'Meiryo', sans-serif; background: #f3f0fb; color: #2d2447; min-height: 100vh; }
 
-  .header { background: #4a3728; color: #f5e6c8; padding: 16px 20px; text-align: center; }
+  .header { background: #5048a0; color: #f0ecff; padding: 16px 20px; text-align: center; }
   .header h1 { font-size: 20px; font-weight: bold; letter-spacing: 0.1em; }
-  .header p { font-size: 13px; margin-top: 4px; color: #d4b896; }
+  .header p { font-size: 13px; margin-top: 4px; color: #c4b5fd; }
 
-  .progress-bar-wrap { background: #3a2a1c; padding: 10px 20px; }
-  .progress-label { color: #d4b896; font-size: 12px; margin-bottom: 4px; display: flex; justify-content: space-between; }
-  .progress-track { background: #2a1e14; border-radius: 10px; height: 8px; }
-  .progress-fill { background: linear-gradient(90deg, #c8965a, #e8b878); height: 8px; border-radius: 10px; transition: width 0.4s ease; }
+  .progress-bar-wrap { background: #3f3480; padding: 10px 20px; }
+  .progress-label { color: #c4b5fd; font-size: 12px; margin-bottom: 4px; display: flex; justify-content: space-between; }
+  .progress-track { background: #2e2560; border-radius: 10px; height: 8px; }
+  .progress-fill { background: linear-gradient(90deg, #818cf8, #c084fc); height: 8px; border-radius: 10px; transition: width 0.4s ease; }
 
-  .sync-status { text-align: center; font-size: 11px; padding: 4px; background: #3a2a1c; color: #a08060; }
-  .sync-status.connected { color: #7ec87e; }
-  .sync-status.error { color: #e87878; }
+  .sync-status { text-align: center; font-size: 11px; padding: 4px; background: #3f3480; color: #a094d4; }
+  .sync-status.connected { color: #6ee7b7; }
+  .sync-status.error { color: #f87171; }
 
-  .tabs { display: flex; overflow-x: auto; background: #3a2a1c; padding: 0 12px; gap: 4px; }
-  .tab { padding: 10px 14px; font-size: 12px; color: #a08060; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; transition: all 0.2s; }
-  .tab:hover { color: #d4b896; }
-  .tab.active { color: #f5e6c8; border-bottom-color: #c8965a; }
+  .tabs { display: flex; overflow-x: auto; background: #3f3480; padding: 0 12px; gap: 4px; }
+  .tab { padding: 10px 14px; font-size: 12px; color: #a094d4; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; transition: all 0.2s; }
+  .tab:hover { color: #ddd6fe; }
+  .tab.active { color: #f0ecff; border-bottom-color: #a78bfa; }
 
   .section { display: none; padding: 12px 16px; max-width: 800px; margin: 0 auto; }
   .section.active { display: block; }
 
   .category { margin-bottom: 16px; }
-  .category-title { font-size: 13px; font-weight: bold; color: #8b5e3c; border-left: 4px solid #c8965a; padding-left: 8px; margin-bottom: 8px; letter-spacing: 0.05em; }
+  .category-title { font-size: 13px; font-weight: bold; color: #6d4fc7; border-left: 4px solid #a78bfa; padding-left: 8px; margin-bottom: 8px; letter-spacing: 0.05em; }
 
-  .item { background: white; border-radius: 8px; padding: 10px 12px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: all 0.2s; }
-  .item.checked { background: #f0ebe4; opacity: 0.7; }
+  .item { background: white; border-radius: 8px; padding: 10px 12px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; box-shadow: 0 1px 4px rgba(80,72,160,0.10); transition: all 0.2s; }
+  .item.checked { background: #ede9f8; opacity: 0.7; }
 
-  .checkbox { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #c8965a; flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-  .checkbox.done { background: #c8965a; border-color: #c8965a; color: white; font-size: 13px; font-weight: bold; }
+  .checkbox { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #a78bfa; flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+  .checkbox.done { background: #a78bfa; border-color: #a78bfa; color: white; font-size: 13px; font-weight: bold; }
 
   .item-text { flex: 1; font-size: 14px; line-height: 1.4; }
-  .item-text.done { text-decoration: line-through; color: #9a8070; }
+  .item-text.done { text-decoration: line-through; color: #9585c0; }
 
-  .reset-btn { display: block; margin: 10px 16px; padding: 6px 16px; font-size: 12px; background: #8b5e3c; color: white; border: none; border-radius: 12px; cursor: pointer; }
-  .reset-btn:hover { background: #6a4028; }
+  .reset-btn { display: block; margin: 10px 16px; padding: 6px 16px; font-size: 12px; background: #6d4fc7; color: white; border: none; border-radius: 12px; cursor: pointer; }
+  .reset-btn:hover { background: #5538a8; }
 </style>
 </head>
 <body>
