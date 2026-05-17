@@ -220,7 +220,8 @@ window.toggleCheck = function(id) {
 };
 
 window.resetAll = function() {
-  if (!confirm('全てのチェックをリセットしますか？')) return;
+  const input = prompt('全てのチェックをリセットします。\n確認のため「リセット」と入力してください。');
+  if (input !== 'リセット') return;
   const updates = {};
   Object.keys(localState).forEach(id => { updates[id] = false; });
   update(checksRef, updates);
