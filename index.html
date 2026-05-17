@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>永代経 準備チェックリスト</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Hiragino Sans', 'Meiryo', sans-serif; background: #f5f0eb; color: #2c2418; min-height: 100vh; }
+  
+  .header { background: #4a3728; color: #f5e6c8; padding: 16px 20px; text-align: center; }
+  .header h1 { font-size: 20px; font-weight: bold; letter-spacing: 0.1em; }
+  .header p { font-size: 13px; margin-top: 4px; color: #d4b896; }
+  
+  .progress-bar-wrap { background: #3a2a1c; padding: 10px 20px; }
+  .progress-label { color: #d4b896; font-size: 12px; margin-bottom: 4px; display: flex; justify-content: space-between; }
+  .progress-track { background: #2a1e14; border-radius: 10px; height: 8px; }
+  .progress-fill { background: linear-gradient(90deg, #c8965a, #e8b878); height: 8px; border-radius: 10px; transition: width 0.4s ease; }
+
+  .tabs { display: flex; overflow-x: auto; background: #3a2a1c; padding: 0 12px; gap: 4px; }
+  .tab { padding: 10px 14px; font-size: 12px; color: #a08060; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; transition: all 0.2s; }
+  .tab:hover { color: #d4b896; }
+  .tab.active { color: #f5e6c8; border-bottom-color: #c8965a; }
+
+  .section { display: none; padding: 12px 16px; max-width: 800px; margin: 0 auto; }
+  .section.active { display: block; }
+
+  .category { margin-bottom: 16px; }
+  .category-title { font-size: 13px; font-weight: bold; color: #8b5e3c; border-left: 4px solid #c8965a; padding-left: 8px; margin-bottom: 8px; letter-spacing: 0.05em; }
+
+  .item { background: white; border-radius: 8px; padding: 10px 12px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); transition: all 0.2s; }
+  .item.checked { background: #f0ebe4; opacity: 0.7; }
+
+  .checkbox { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #c8965a; flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+  .checkbox.done { background: #c8965a; border-color: #c8965a; color: white; font-size: 13px; font-weight: bold; }
+
+  .item-text { flex: 1; font-size: 14px; line-height: 1.4; }
+  .item-text.done { text-decoration: line-through; color: #9a8070; }
+
+  .reset-btn { display: block; margin: 10px 16px; padding: 6px 16px; font-size: 12px; background: #8b5e3c; color: white; border: none; border-radius: 12px; cursor: pointer; }
+  .reset-btn:hover { background: #6a4028; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>永代経 準備チェックリスト</h1>
+  <p>5月18日 14時開始</p>
+</div>
+
+<div class="progress-bar-wrap">
+  <div class="progress-label">
+    <span>進捗</span>
+    <span id="progress-text">0 / 0 完了</span>
+  </div>
+  <div class="progress-track">
+    <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+</div>
+
+<button class="reset-btn" onclick="resetAll()">チェックをリセット</button>
+
+<div class="tabs" id="tabs">
+  <div class="tab active" onclick="showTab(0)">外陣（1F）</div>
+  <div class="tab" onclick="showTab(1)">内陣（1F）</div>
+  <div class="tab" onclick="showTab(2)">客僧間（1F）</div>
+  <div class="tab" onclick="showTab(3)">外回り</div>
+  <div class="tab" onclick="showTab(4)">法中</div>
+  <div class="tab" onclick="showTab(5)">その他</div>
+  <div class="tab" onclick="showTab(6)">講師控室（2F）</div>
+  <div class="tab" onclick="showTab(7)">当日準備</div>
+</div>
+
+<div id="sections"></div>
+
+<script>
+const DATA = [
+  {
+    id: 'gaijin', title: '1階 外陣',
+    categories: [
+      { title: '🪑 設置・備品', items: ['講演台を設置','紺色もうせんを敷く','ホワイトボードを設置','スピーカーを設置','マイクを設置・動作確認','焼香台を設置','お焼香の用意','いすを30脚並べる'] },
+      { title: '🧹 掃除', items: ['掃除機をかける','モップで軽く拭き掃除','玄関ガラス戸の拭き掃除','窓枠の拭き掃除','タイル掃除'] },
+      { title: '📋 掲示物', items: ['お供物の掲示','講師案内の掲示'] },
+    ]
+  },
+  {
+    id: 'naijin', title: '1階 内陣',
+    categories: [
+      { title: '🧹 掃除', items: ['床を手で拭き掃除','畳を軽く拭く','上卓を軽く乾拭き'] },
+      { title: '✨ 荘厳関係', items: ['打敷をかける','方立をつける（供花に飾り）','果物を供える','金香炉を手前に配置','土香炉を奥に配置'] },
+    ]
+  },
+  {
+    id: 'kyakuso', title: '1階 客僧間',
+    categories: [
+      { title: '🧹 掃除', items: ['掃除機をかける','畳を拭く','ニッチ（飾り窓）を拭く','冷蔵庫を拭く','鏡を拭く','窓を拭く','窓枠を拭く'] },
+      { title: '🪑 設置・備品', items: ['長机を2つ設置','いすを6脚設置','テーブルクロスを敷く','華籠（ろう）を7ヶ用意','華葩（けは）を7人分用意','レジュメを2部用意'] },
+    ]
+  },
+  {
+    id: 'soto', title: '外回り',
+    categories: [
+      { title: '🧹 外回り清掃', items: ['玄関タイル（内側）を掃除','玄関タイル（外側）を掃除','戸の拭き掃除'] },
+    ]
+  },
+  {
+    id: 'houchu', title: '法中',
+    categories: [
+      { title: '👤 法中関係', items: ['お供養の数を確認（基本6、欠席者で調整）','善照寺の出欠確認','遠景寺の出欠確認','寿光寺の出欠確認','誓源寺の出欠確認','徳正寺の出欠確認','正楽寺の出欠確認','浄満寺の出欠確認','その他（智子・秀章など）の確認'] },
+      { title: '🍵 飲食物', items: ['ペットボトルお茶を用意','紙コップを用意','お茶菓子を用意','おしぼりを用意'] },
+    ]
+  },
+  {
+    id: 'sonota', title: 'その他',
+    categories: [
+      { title: '📦 その他', items: ['おゆのみを30ヶ用意（3Fから降ろす）','お布施用お盆を用意（2F裏クローゼット内）'] },
+    ]
+  },
+  {
+    id: 'koshi', title: '2階 講師控室（畳）',
+    categories: [
+      { title: '🧹 掃除', items: ['掃除機をかける','窓枠など拭き掃除'] },
+      { title: '🪑 設置・備品', items: ['座敷机を設置（恭子の部屋より移動）','テーブルクロスを敷く','芳名録を用意','筆ペンを用意','レジュメを用意','座布団を敷く'] },
+    ]
+  },
+  {
+    id: 'toujitsu', title: '当日準備',
+    categories: [
+      { title: '🏮 幕の準備', items: ['幕を設置・確認','張り物確認'] },
+      { title: '🍰 ご講師接待', items: ['ケーキを用意','コーヒーを用意','お供養を用意'] },
+      { title: '🍚 その他', items: ['お仏飯を用意'] },
+    ]
+  },
+];
+
+let state = {};
+
+function itemId(sectionId, catIdx, itemIdx) {
+  return sectionId + '_' + catIdx + '_' + itemIdx;
+}
+
+function buildSections() {
+  const container = document.getElementById('sections');
+  DATA.forEach(function(section, si) {
+    const div = document.createElement('div');
+    div.className = 'section' + (si === 0 ? ' active' : '');
+    div.id = 'section_' + si;
+
+    let html = '';
+    section.categories.forEach(function(cat, ci) {
+      html += '<div class="category"><div class="category-title">' + cat.title + '</div>';
+      cat.items.forEach(function(item, ii) {
+        const id = itemId(section.id, ci, ii);
+        state[id] = { checked: false };
+        html += '<div class="item" id="item_' + id + '">'
+          + '<div class="checkbox" id="cb_' + id + '" onclick="toggleCheck(\'' + id + '\')"></div>'
+          + '<div class="item-text" id="txt_' + id + '">' + item + '</div>'
+          + '</div>';
+      });
+      html += '</div>';
+    });
+    div.innerHTML = html;
+    container.appendChild(div);
+  });
+  updateProgress();
+}
+
+function toggleCheck(id) {
+  state[id].checked = !state[id].checked;
+  const cb = document.getElementById('cb_' + id);
+  const txt = document.getElementById('txt_' + id);
+  const item = document.getElementById('item_' + id);
+  if (state[id].checked) {
+    cb.classList.add('done');
+    cb.textContent = '✓';
+    txt.classList.add('done');
+    item.classList.add('checked');
+  } else {
+    cb.classList.remove('done');
+    cb.textContent = '';
+    txt.classList.remove('done');
+    item.classList.remove('checked');
+  }
+  updateProgress();
+}
+
+function updateProgress() {
+  const ids = Object.keys(state);
+  const total = ids.length;
+  const done = ids.filter(function(id){ return state[id].checked; }).length;
+  document.getElementById('progress-text').textContent = done + ' / ' + total + ' 完了';
+  document.getElementById('progress-fill').style.width = (total ? (done/total*100) : 0) + '%';
+}
+
+function showTab(idx) {
+  document.querySelectorAll('.tab').forEach(function(t,i){ t.classList.toggle('active', i===idx); });
+  document.querySelectorAll('.section').forEach(function(s,i){ s.classList.toggle('active', i===idx); });
+}
+
+function resetAll() {
+  Object.keys(state).forEach(function(id) {
+    state[id].checked = false;
+    const cb = document.getElementById('cb_' + id);
+    const txt = document.getElementById('txt_' + id);
+    const item = document.getElementById('item_' + id);
+    if (cb) { cb.classList.remove('done'); cb.textContent = ''; }
+    if (txt) { txt.classList.remove('done'); }
+    if (item) { item.classList.remove('checked'); }
+  });
+  updateProgress();
+}
+
+buildSections();
+</script>
+</body>
+</html>
