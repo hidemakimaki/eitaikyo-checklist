@@ -43,6 +43,9 @@
 
   .reset-btn { display: block; margin: 10px 16px; padding: 6px 16px; font-size: 12px; background: #6d4fc7; color: white; border: none; border-radius: 12px; cursor: pointer; }
   .reset-btn:hover { background: #5538a8; }
+
+  .tab.completed { color: #4ade80; }
+  .tab.completed.active { color: #4ade80; border-bottom-color: #4ade80; }
 </style>
 </head>
 <body>
@@ -229,6 +232,20 @@ window.showTab = function(idx) {
   if (idx === 0) buildRemainingList();
 };
 
+function updateTabStates() {
+  const tabs = document.querySelectorAll('.tab');
+  DATA.forEach(function(section, si) {
+    const tabEl = tabs[si + 1];
+    if (!tabEl) return;
+    const allIds = [];
+    section.categories.forEach(function(cat, ci) {
+      cat.items.forEach(function(item, ii) { allIds.push(itemId(section.id, ci, ii)); });
+    });
+    const allDone = allIds.length > 0 && allIds.every(id => localState[id]);
+    tabEl.classList.toggle('completed', allDone);
+  });
+}
+
 function buildRemainingList() {
   const container = document.getElementById('remaining-section');
   if (!container) return;
@@ -270,7 +287,8 @@ onValue(checksRef, (snapshot) => {
     applyState(id, localState[id]);
   });
   updateProgress();
-  if (document.getElementById('section_8').classList.contains('active')) buildRemainingList();
+  updateTabStates();
+  if (document.getElementById('section_0').classList.contains('active')) buildRemainingList();
   const statusEl = document.getElementById('sync-status');
   statusEl.textContent = '同期中 — リアルタイム共有有効';
   statusEl.className = 'sync-status connected';
