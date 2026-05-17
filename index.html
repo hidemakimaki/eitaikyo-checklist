@@ -75,9 +75,11 @@
   <div class="tab" onclick="showTab(5)">その他</div>
   <div class="tab" onclick="showTab(6)">講師控室（2F）</div>
   <div class="tab" onclick="showTab(7)">当日準備</div>
+  <div class="tab" onclick="showTab(8)">残り一覧</div>
 </div>
 
 <div id="sections"></div>
+<div class="section" id="section_8"><div id="remaining-section"></div></div>
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -224,7 +226,39 @@ window.resetAll = function() {
 window.showTab = function(idx) {
   document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === idx));
   document.querySelectorAll('.section').forEach((s, i) => s.classList.toggle('active', i === idx));
+  if (idx === 8) buildRemainingList();
 };
+
+function buildRemainingList() {
+  const container = document.getElementById('remaining-section');
+  if (!container) return;
+  let html = '';
+  let totalRemaining = 0;
+  DATA.forEach(function(section) {
+    const unchecked = [];
+    section.categories.forEach(function(cat, ci) {
+      cat.items.forEach(function(item, ii) {
+        const id = itemId(section.id, ci, ii);
+        if (!localState[id]) unchecked.push({ id, text: item });
+      });
+    });
+    if (unchecked.length > 0) {
+      totalRemaining += unchecked.length;
+      html += '<div class="category"><div class="category-title">' + section.title + '</div>';
+      unchecked.forEach(function({ id, text }) {
+        html += '<div class="item">'
+          + '<div class="checkbox" onclick="window.toggleCheck(\'' + id + '\')"></div>'
+          + '<div class="item-text">' + text + '</div>'
+          + '</div>';
+      });
+      html += '</div>';
+    }
+  });
+  if (totalRemaining === 0) {
+    html = '<div style="text-align:center;padding:40px;color:#8b5e3c;font-size:16px;">✅ 全て完了しました！</div>';
+  }
+  container.innerHTML = html;
+}
 
 buildSections();
 
@@ -235,6 +269,7 @@ onValue(checksRef, (snapshot) => {
     applyState(id, localState[id]);
   });
   updateProgress();
+  if (document.getElementById('section_8').classList.contains('active')) buildRemainingList();
   const statusEl = document.getElementById('sync-status');
   statusEl.textContent = '同期中 — リアルタイム共有有効';
   statusEl.className = 'sync-status connected';
